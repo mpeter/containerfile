@@ -1,0 +1,53 @@
+# Unbound Force — managed by uf init
+# Runtime data under .uf/ (databases, caches, locks, logs)
+.uf/workflows/
+.uf/artifacts/
+.uf/dewey/graph.db
+.uf/dewey/graph.db-shm
+.uf/dewey/graph.db-wal
+.uf/dewey/*.lock
+.uf/dewey/cache/
+.uf/dewey/dewey.log
+.uf/replicator/*.db
+.uf/replicator/*.db-shm
+.uf/replicator/*.db-wal
+.uf/replicator/*.lock
+.uf/muti-mind/artifacts/
+.uf/mx-f/data/
+# Legacy tool directories (renamed to .uf/ in Spec 025)
+.dewey/
+.hive/
+.unbound-force/
+.muti-mind/
+.mx-f/
+
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-workspace
+*.sublime-project
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
