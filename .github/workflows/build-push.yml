@@ -87,7 +87,7 @@ jobs:
           podman run --rm opencode-dev-test gh --version
 
           echo "==> Checking non-root user ..."
-          USER_OUTPUT=$(podman run --rm opencode-dev-test whoami)
+          USER_OUTPUT=$(podman run --rm --entrypoint whoami opencode-dev-test)
           if [ "$USER_OUTPUT" != "dev" ]; then
             echo "ERROR: Expected 'dev' but got '$USER_OUTPUT'"
             exit 1
