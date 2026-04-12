@@ -1,0 +1,97 @@
+# Containerfile.udi — UDI-based variant for Eclipse Che / Dev Spaces
+#
+# Uses the Universal Developer Image as the base, which already includes
+# Go, Node.js, Git, and common developer tools. We install only the
+# UF-specific tools on top.
+#
+# Key differences from the primary Containerfile (per research R3):
+#   - Base: UDI (not Fedora) — Go, Node.js, Git pre-installed
+#   - User: "user" UID 1001 (not "dev") — UDI default, do NOT change
+#   - Home: /home/user (not /home/dev)
+#   - Accept UDI's Go/Node.js versions for compatibility
+#
+# Build:
+#   podman build -t opencode-dev-udi -f Containerfile.udi .
+#
+# Smoke test:
+#   podman run --rm opencode-dev-udi uf --version
+#   podman run --rm opencode-dev-udi whoami   # prints "user"
+
+FROM quay.io/devfile/universal-developer-image:latest
+
+# ---------------------------------------------------------------------------
+# System packages — install as root (gh CLI may not be in UDI)
+# ---------------------------------------------------------------------------
+
+USER 0
+
+RUN dnf install -y \
+      gh \
+      procps-ng \
+    && dnf clean all \
+    && rm -rf /var/cache/dnf
+
+# ---------------------------------------------------------------------------
+# Upgrade Go — UDI ships Go 1.23/1.24 but dewey requires 1.25+
+# ---------------------------------------------------------------------------
+
+ARG GO_VERSION=1.25.3
+RUN rm -rf /usr/local/go \
+    && ARCH="$(uname -m)" \
+    && case "$ARCH" in \
+         x86_64)  GOARCH=amd64 ;; \
+         aarch64) GOARCH=arm64 ;; \
+         *)       echo "Unsupported arch: $ARCH" && exit 1 ;; \
+       esac \
+    && curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-${GOARCH}.tar.gz" \
+       | tar -C /usr/local -xz
+
+# ---------------------------------------------------------------------------
+# Environment — set for all subsequent layers and runtime
+#
+# UDI's Go and Node.js are already in PATH. We add GOPATH/bin for
+# tools installed via go install, and set the Ollama endpoint.
+# ---------------------------------------------------------------------------
+
+ENV GOROOT=/usr/local/go \
+    GOPATH=/home/user/go \
+    NPM_CONFIG_PREFIX=/home/user/.npm-global \
+    PATH="/usr/local/go/bin:/home/user/go/bin:/home/user/.npm-global/bin:/home/user/.local/bin:$PATH" \
+    DEWEY_EMBEDDING_ENDPOINT=http://host.containers.internal:11434
+
+# ---------------------------------------------------------------------------
+# Install UF tools as the UDI user (go install + npm)
+# ---------------------------------------------------------------------------
+
+COPY --chown=1001:0 scripts/install-uf-tools.sh /home/user/scripts/install-uf-tools.sh
+RUN chmod +x /home/user/scripts/install-uf-tools.sh
+
+USER 1001
+RUN /home/user/scripts/install-uf-tools.sh
+
+# ---------------------------------------------------------------------------
+# Install OpenCode via official curl installer (R6)
+#
+# The installer detects architecture automatically and places the binary
+# in ~/.local/bin which is already in PATH.
+# ---------------------------------------------------------------------------
+
+RUN curl -fsSL https://opencode.ai/install | bash
+
+# ---------------------------------------------------------------------------
+# Copy entrypoint and extract-changes scripts
+# ---------------------------------------------------------------------------
+
+USER 0
+COPY --chown=1001:0 scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY --chown=1001:0 scripts/extract-changes.sh /usr/local/bin/extract-changes.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/extract-changes.sh
+
+# ---------------------------------------------------------------------------
+# Final runtime configuration — switch back to UDI user
+# ---------------------------------------------------------------------------
+
+USER 1001
+WORKDIR /home/user
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

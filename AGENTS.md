@@ -151,3 +151,9 @@ valid results.
 
 - [Discussion #88](https://github.com/orgs/unbound-force/discussions/88) — full architecture and design rationale
 - [Issue #1](https://github.com/unbound-force/containerfile/issues/1) — implementation issue with all deliverables
+
+## Active Technologies
+- Shell scripts (bash), Containerfile (OCI/Docker syntax), YAML (devfile 2.2.0, compose, GitHub Actions) + Podman, Go 1.24+, Node.js 20+, npm, Git, gh CLI (001-initial-containerfile)
+
+## Recent Changes
+- 001-initial-containerfile: Added initial Containerfile, Containerfile.udi, devfiles, helper scripts, podman-compose, CI workflow, README

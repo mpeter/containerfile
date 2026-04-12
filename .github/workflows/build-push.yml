@@ -1,0 +1,138 @@
+# build-push.yml — Multi-arch build and push to quay.io
+#
+# Builds the opencode-dev container image for linux/arm64 and
+# linux/amd64 using Podman manifest, then pushes to quay.io.
+#
+# Triggers:
+#   - Push to main: build + push with "latest" tag
+#   - Version tag (v*): build + push with version tag
+#   - Pull request: build only (no push) for validation
+#
+# Requirements: FR-017
+# Research: R5 (GitHub Actions Multi-Arch Build with Podman)
+
+name: Build and Push Container Image
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: quay.io
+  IMAGE_NAME: unbound-force/opencode-dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ---------------------------------------------------------------
+      # QEMU for cross-architecture emulation (R5)
+      # ---------------------------------------------------------------
+      - name: Install QEMU user-static
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
+
+      # ---------------------------------------------------------------
+      # Determine tags based on trigger
+      # ---------------------------------------------------------------
+      - name: Determine image tags
+        id: tags
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            # Version tag push — tag with version number
+            VERSION="${{ github.ref_name }}"
+            echo "tags=${REGISTRY}/${IMAGE_NAME}:${VERSION}" >> "$GITHUB_OUTPUT"
+            echo "manifest_tag=${VERSION}" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            # Push to main — tag as latest
+            echo "tags=${REGISTRY}/${IMAGE_NAME}:latest" >> "$GITHUB_OUTPUT"
+            echo "manifest_tag=latest" >> "$GITHUB_OUTPUT"
+          else
+            # Pull request — build only, use PR number for local tag
+            echo "tags=localhost/${IMAGE_NAME}:pr-${{ github.event.number }}" >> "$GITHUB_OUTPUT"
+            echo "manifest_tag=pr-${{ github.event.number }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ---------------------------------------------------------------
+      # Build multi-arch image using podman manifest (R5)
+      # ---------------------------------------------------------------
+      - name: Create manifest
+        run: podman manifest create opencode-dev
+
+      - name: Build for linux/amd64
+        run: |
+          podman build \
+            --platform linux/amd64 \
+            --manifest opencode-dev \
+            -f Containerfile .
+
+      - name: Build for linux/arm64
+        run: |
+          podman build \
+            --platform linux/arm64 \
+            --manifest opencode-dev \
+            -f Containerfile .
+
+      # ---------------------------------------------------------------
+      # Smoke tests — verify tools are present before pushing
+      # ---------------------------------------------------------------
+      - name: Run smoke tests (amd64)
+        run: |
+          # Build a local image for smoke testing on the runner arch
+          podman build -t opencode-dev-test -f Containerfile .
+
+          echo "==> Checking tool versions ..."
+          podman run --rm opencode-dev-test uf --version
+          podman run --rm opencode-dev-test opencode --version
+          podman run --rm opencode-dev-test dewey --version
+          podman run --rm opencode-dev-test replicator --version
+          podman run --rm opencode-dev-test gaze --version
+          podman run --rm opencode-dev-test go version
+          podman run --rm opencode-dev-test golangci-lint --version
+          podman run --rm opencode-dev-test govulncheck -version
+          podman run --rm opencode-dev-test node --version
+          podman run --rm opencode-dev-test npm --version
+          podman run --rm opencode-dev-test git --version
+          podman run --rm opencode-dev-test gh --version
+
+          echo "==> Checking non-root user ..."
+          USER_OUTPUT=$(podman run --rm opencode-dev-test whoami)
+          if [ "$USER_OUTPUT" != "dev" ]; then
+            echo "ERROR: Expected 'dev' but got '$USER_OUTPUT'"
+            exit 1
+          fi
+          echo "User check passed: $USER_OUTPUT"
+
+          # Clean up test image
+          podman rmi opencode-dev-test || true
+
+      # ---------------------------------------------------------------
+      # Push to quay.io (only on main push or version tag)
+      # ---------------------------------------------------------------
+      - name: Login to quay.io
+        if: github.event_name == 'push'
+        run: |
+          podman login quay.io \
+            -u "${{ secrets.QUAY_USERNAME }}" \
+            -p "${{ secrets.QUAY_PASSWORD }}"
+
+      - name: Push manifest to quay.io
+        if: github.event_name == 'push'
+        run: |
+          podman manifest push opencode-dev \
+            "docker://${{ steps.tags.outputs.tags }}"
+
+      # Tag as latest on version tag pushes too
+      - name: Push latest tag (version tag push)
+        if: github.ref_type == 'tag'
+        run: |
+          podman manifest push opencode-dev \
+            "docker://${REGISTRY}/${IMAGE_NAME}:latest"

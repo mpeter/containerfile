@@ -1,0 +1,41 @@
+# podman-compose.yml — Headless server mode (Model B)
+#
+# Runs OpenCode as a headless server with read-only source mount.
+# The agent works on a writable copy; changes are extracted via
+# git format-patch (scripts/extract-changes.sh).
+#
+# Usage:
+#   podman-compose up -d        # start headless server
+#   ./scripts/connect.sh        # attach from host
+#   podman-compose down          # stop and clean up
+#
+# Security:
+#   - Source directory mounted read-only (FR-021)
+#   - Resource limits enforced (FR-020)
+#   - No secrets in image (FR-019)
+
+services:
+  opencode:
+    image: quay.io/unbound-force/opencode-dev:latest
+    container_name: opencode-server
+    ports:
+      - "4096:4096"
+    volumes:
+      # Read-only source mount — agent cannot modify host files
+      - ./:/workspace:ro,Z
+      # Writable work directory — agent operates here
+      - opencode-workdir:/work
+      # Persist OpenCode state across restarts
+      - ~/.local/share/opencode:/home/dev/.local/share/opencode:Z
+    environment:
+      - DEWEY_EMBEDDING_ENDPOINT=http://host.containers.internal:11434
+      - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD:-}
+    command: ["opencode", "serve", "--port", "4096", "--hostname", "0.0.0.0"]
+    deploy:
+      resources:
+        limits:
+          memory: 8g
+          cpus: "4"
+
+volumes:
+  opencode-workdir:

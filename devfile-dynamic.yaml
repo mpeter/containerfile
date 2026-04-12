@@ -1,0 +1,66 @@
+# devfile-dynamic.yaml — Eclipse Che workspace using UDI (no custom image)
+#
+# Uses the Universal Developer Image as the base. Tools are installed
+# via postStart commands at workspace creation — slower startup but
+# no custom image to maintain.
+#
+# Devfile 2.2.0 specification: https://devfile.io/docs/2.2.0/
+# Requirements: FR-010, FR-011
+
+schemaVersion: 2.2.0
+
+metadata:
+  name: unbound-force-workspace-dynamic
+  version: 1.0.0
+
+components:
+  - name: dev-container
+    container:
+      image: quay.io/devfile/universal-developer-image:latest
+      memoryLimit: 8Gi
+      cpuLimit: "4"
+      mountSources: true
+      env:
+        - name: DEWEY_EMBEDDING_ENDPOINT
+          value: "http://host.containers.internal:11434"
+        - name: GOPATH
+          value: "/home/user/go"
+        - name: PATH
+          value: "/home/user/go/bin:/home/user/.local/bin:$PATH"
+      endpoints:
+        - name: opencode-server
+          targetPort: 4096
+          exposure: internal
+
+commands:
+  - id: install-tools
+    exec:
+      component: dev-container
+      commandLine: |
+        # Install UF tools via go install + npm
+        if [ -f /projects/scripts/install-uf-tools.sh ]; then
+          bash /projects/scripts/install-uf-tools.sh
+        else
+          echo "install-uf-tools.sh not found in /projects/scripts/"
+          echo "Clone the containerfile repo or provide the script."
+          exit 1
+        fi
+        # Install OpenCode via official installer
+        curl -fsSL https://opencode.ai/install | bash
+      workingDir: /projects
+
+  - id: start-server
+    exec:
+      component: dev-container
+      commandLine: "opencode serve --port 4096 --hostname 0.0.0.0"
+      workingDir: /projects
+
+  - id: init-workspace
+    exec:
+      component: dev-container
+      commandLine: "uf init"
+      workingDir: /projects
+
+events:
+  postStart:
+    - install-tools
