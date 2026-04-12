@@ -82,7 +82,19 @@ export PATH="$NPM_CONFIG_PREFIX/bin:$PATH"
 mkdir -p "$NPM_CONFIG_PREFIX"
 
 info "Installing @fission-ai/openspec via npm ..."
-npm install -g @fission-ai/openspec
+# Retry npm install up to 3 times — CI runners sometimes hit transient
+# network errors (ECONNRESET) when downloading large dependency trees.
+for attempt in 1 2 3; do
+  if npm install -g @fission-ai/openspec; then
+    break
+  fi
+  if [ "$attempt" -eq 3 ]; then
+    error "npm install failed after 3 attempts"
+    exit 1
+  fi
+  info "npm install attempt $attempt failed, retrying in 5s ..."
+  sleep 5
+done
 
 # ---------------------------------------------------------------------------
 # Version verification — print each tool for build-log visibility
