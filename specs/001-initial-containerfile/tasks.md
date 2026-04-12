@@ -121,6 +121,27 @@
 
 ---
 
+## Phase 8: Base Image + Native Runners
+
+**Purpose**: Extract the slow-changing platform foundation into a separate base image rebuilt weekly, and replace QEMU emulation with native arm64 runners. Combined effect: CI wall time drops from ~40 min to ~10 min (SC-001).
+
+**Dependencies**: Phase 6 (US4) must be complete — this phase refactors the CI workflow created in T015 and the Containerfile created in T005.
+
+### Implementation (sequential — strict dependency chain)
+
+- [x] T019 [US4] Create `Containerfile.base` — base image definition: FROM `registry.fedoraproject.org/fedora:41`; `dnf install` system packages (nodejs, npm, git, gh, curl, findutils, procps-ng, which, tar, gzip); Go 1.25.3 tarball install with `ARG GO_VERSION=1.25.3` and arch-detection via `uname -m`; create non-root user `dev` with home at `/home/dev`; set ENV for GOROOT, GOPATH, NPM_CONFIG_PREFIX, PATH (including `.opencode/bin`, `.npm-global/bin`), DEWEY_EMBEDDING_ENDPOINT; must NOT include UF Go tools, OpenCode, OpenSpec CLI, entrypoint, or helper scripts — platform foundation only (FR-022, FR-023, FR-025)
+- [x] T020 [US4] Create `.github/workflows/build-base.yml` — base image CI workflow: triggers on `schedule` (weekly, cron `'0 4 * * 1'`) and `workflow_dispatch` (manual); 3 jobs: `build-amd64` (runs-on `ubuntu-latest`), `build-arm64` (runs-on `ubuntu-24.04-arm`), `push-manifest` (needs both build jobs); each build job runs `podman build -t opencode-base-$ARCH -f Containerfile.base .` then smoke tests (`go version`, `node --version`, `git --version`, `--entrypoint whoami` expects `dev`), uploads image as artifact; push job logs in to quay.io, creates manifest list, pushes to `quay.io/unbound-force/opencode-base:latest` (FR-024, FR-027)
+- [x] T021 [US4] Refactor `Containerfile` to use base image — change FROM to `quay.io/unbound-force/opencode-base:latest`; remove `dnf install` step, Go tarball download, `ARG GO_VERSION`, `useradd`, and ENV block (GOROOT, GOPATH, NPM_CONFIG_PREFIX, PATH); keep COPY and RUN for `install-uf-tools.sh`, `USER dev`, OpenCode curl installer, script copies, `ENV DEWEY_EMBEDDING_ENDPOINT`, final ENTRYPOINT; resulting Containerfile should be ~30 lines (FR-001a)
+- [x] T022 [US4] Refactor `.github/workflows/build-push.yml` to use native runners — replace single QEMU-based job with 3 jobs: `build-amd64` (runs-on `ubuntu-latest`), `build-arm64` (runs-on `ubuntu-24.04-arm`), `push-manifest` (needs both); remove QEMU install step entirely; each build job runs `podman build`, smoke tests natively (tool versions + `--entrypoint whoami` expects `dev`), uploads image artifact; push job creates manifest from both arch images, pushes to `quay.io/unbound-force/opencode-dev`; triggers unchanged (push to main, version tags, PRs) (FR-026)
+
+### Verification
+
+- [x] T023 [US4] Verify base image + dev image build chain — build base image locally (`podman build -t opencode-base -f Containerfile.base .`), then build dev image on top (`podman build -t opencode-dev -f Containerfile .`); run full smoke test suite (all tool version checks + `whoami` prints `dev`); verify dev image build is faster than the pre-refactor single-stage build (SC-001, SC-002)
+
+**Checkpoint**: Base image builds with platform packages + Go only. Dev image builds on top of base with UF tools only. Full smoke test suite passes. Dev image build time is significantly reduced. CI workflows use native runners for both architectures.
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -132,6 +153,7 @@
 - **Phase 5 (US3 — P3)**: Depends on Phase 2 — needs install script; independent of US2
 - **Phase 6 (US4 — P4)**: Depends on Phase 3 — needs a working Containerfile
 - **Phase 7 (Polish)**: Depends on Phases 3-6 — documents all artifacts
+- **Phase 8 (Base Image + Native Runners)**: Depends on Phase 6 — refactors Containerfile (T005) and CI workflow (T015); strict internal dependency chain (T019 → T020 → T021 → T022 → T023)
 
 ### Parallel Opportunities
 
@@ -153,7 +175,7 @@
 
 | Metric | Count |
 |--------|-------|
-| **Total tasks** | 18 |
+| **Total tasks** | 23 |
 | **Phase 1 (Setup)** | 2 |
 | **Phase 2 (Foundational)** | 1 |
 | **Phase 3 (US1 — P1)** | 3 |
@@ -161,7 +183,8 @@
 | **Phase 5 (US3 — P3)** | 4 |
 | **Phase 6 (US4 — P4)** | 1 |
 | **Phase 7 (Polish)** | 3 |
+| **Phase 8 (Base Image + Native Runners)** | 5 |
 | **Parallelizable [P] tasks** | 6 |
-| **Files created** | 12 |
-| **Files updated** | 1 (AGENTS.md) |
+| **Files created** | 14 |
+| **Files modified** | 3 (AGENTS.md, Containerfile, build-push.yml) |
 <!-- spec-review: passed -->
