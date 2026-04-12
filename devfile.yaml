@@ -1,0 +1,41 @@
+# devfile.yaml — Eclipse Che workspace with custom image
+#
+# Uses the pre-built opencode-dev image for fast workspace startup.
+# All UF tools are baked into the image — no postStart installation.
+#
+# Devfile 2.2.0 specification: https://devfile.io/docs/2.2.0/
+# Requirements: FR-009, FR-011
+
+schemaVersion: 2.2.0
+
+metadata:
+  name: unbound-force-workspace
+  version: 1.0.0
+
+components:
+  - name: opencode-dev
+    container:
+      image: quay.io/unbound-force/opencode-dev:latest
+      memoryLimit: 8Gi
+      cpuLimit: "4"
+      mountSources: true
+      env:
+        - name: DEWEY_EMBEDDING_ENDPOINT
+          value: "http://host.containers.internal:11434"
+      endpoints:
+        - name: opencode-server
+          targetPort: 4096
+          exposure: internal
+
+commands:
+  - id: start-server
+    exec:
+      component: opencode-dev
+      commandLine: "opencode serve --port 4096 --hostname 0.0.0.0"
+      workingDir: /projects
+
+  - id: init-workspace
+    exec:
+      component: opencode-dev
+      commandLine: "uf init"
+      workingDir: /projects
