@@ -67,7 +67,7 @@ RUN useradd -m -s /bin/bash dev
 ENV GOROOT=/usr/local/go \
     GOPATH=/home/dev/go \
     NPM_CONFIG_PREFIX=/home/dev/.npm-global \
-    PATH="/usr/local/go/bin:/home/dev/go/bin:/home/dev/.npm-global/bin:/home/dev/.local/bin:$PATH" \
+    PATH="/usr/local/go/bin:/home/dev/go/bin:/home/dev/.npm-global/bin:/home/dev/.opencode/bin:/home/dev/.local/bin:$PATH" \
     DEWEY_EMBEDDING_ENDPOINT=http://host.containers.internal:11434
 
 # ---------------------------------------------------------------------------

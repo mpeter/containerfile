@@ -56,7 +56,7 @@ RUN rm -rf /usr/local/go \
 ENV GOROOT=/usr/local/go \
     GOPATH=/home/user/go \
     NPM_CONFIG_PREFIX=/home/user/.npm-global \
-    PATH="/usr/local/go/bin:/home/user/go/bin:/home/user/.npm-global/bin:/home/user/.local/bin:$PATH" \
+    PATH="/usr/local/go/bin:/home/user/go/bin:/home/user/.npm-global/bin:/home/user/.opencode/bin:/home/user/.local/bin:$PATH" \
     DEWEY_EMBEDDING_ENDPOINT=http://host.containers.internal:11434
 
 # ---------------------------------------------------------------------------
