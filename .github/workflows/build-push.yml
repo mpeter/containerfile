@@ -47,52 +47,35 @@ jobs:
         id: tags
         run: |
           if [[ "${{ github.ref_type }}" == "tag" ]]; then
-            # Version tag push — tag with version number
             VERSION="${{ github.ref_name }}"
             echo "tags=${REGISTRY}/${IMAGE_NAME}:${VERSION}" >> "$GITHUB_OUTPUT"
             echo "manifest_tag=${VERSION}" >> "$GITHUB_OUTPUT"
           elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            # Push to main — tag as latest
             echo "tags=${REGISTRY}/${IMAGE_NAME}:latest" >> "$GITHUB_OUTPUT"
             echo "manifest_tag=latest" >> "$GITHUB_OUTPUT"
           else
-            # Pull request — build only, use PR number for local tag
             echo "tags=localhost/${IMAGE_NAME}:pr-${{ github.event.number }}" >> "$GITHUB_OUTPUT"
             echo "manifest_tag=pr-${{ github.event.number }}" >> "$GITHUB_OUTPUT"
           fi
 
       # ---------------------------------------------------------------
-      # Build multi-arch image using podman manifest (R5)
+      # Build native-arch image first (fast, no QEMU) for smoke tests
       # ---------------------------------------------------------------
-      - name: Create manifest
-        run: podman manifest create opencode-dev
-
-      - name: Build for linux/amd64
+      - name: Build for native arch (amd64)
         run: |
           podman build \
-            --platform linux/amd64 \
-            --manifest opencode-dev \
-            -f Containerfile .
-
-      - name: Build for linux/arm64
-        run: |
-          podman build \
-            --platform linux/arm64 \
-            --manifest opencode-dev \
+            -t opencode-dev-test \
             -f Containerfile .
 
       # ---------------------------------------------------------------
-      # Smoke tests — verify tools are present before pushing
+      # Smoke tests — verify tools before investing in cross-arch build
       # ---------------------------------------------------------------
-      - name: Run smoke tests (amd64)
+      - name: Run smoke tests
         run: |
-          # Build a local image for smoke testing on the runner arch
-          podman build -t opencode-dev-test -f Containerfile .
-
           echo "==> Checking tool versions ..."
           podman run --rm opencode-dev-test uf --version
           podman run --rm opencode-dev-test opencode --version
-          podman run --rm opencode-dev-test dewey --version
+          podman run --rm opencode-dev-test dewey version
           podman run --rm opencode-dev-test replicator --version
           podman run --rm opencode-dev-test gaze --version
           podman run --rm opencode-dev-test go version
@@ -111,8 +94,21 @@ jobs:
           fi
           echo "User check passed: $USER_OUTPUT"
 
-          # Clean up test image
-          podman rmi opencode-dev-test || true
+      # ---------------------------------------------------------------
+      # Build multi-arch manifest (only after smoke tests pass)
+      # ---------------------------------------------------------------
+      - name: Create manifest
+        run: podman manifest create opencode-dev
+
+      - name: Add native amd64 image to manifest
+        run: podman manifest add opencode-dev containers-storage:localhost/opencode-dev-test
+
+      - name: Build and add linux/arm64 to manifest
+        run: |
+          podman build \
+            --platform linux/arm64 \
+            --manifest opencode-dev \
+            -f Containerfile .
 
       # ---------------------------------------------------------------
       # Push to quay.io (only on main push or version tag)
