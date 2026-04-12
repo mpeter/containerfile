@@ -1,0 +1,73 @@
+# Containerfile.base — Multi-arch base image for OpenCode Dev
+#
+# Foundation layer: Fedora 41 + system packages + Go 1.25 + non-root user.
+# Does NOT include UF tools (uf, dewey, replicator, gaze), OpenCode,
+# OpenSpec CLI, or any project-specific scripts.
+#
+# Published to: quay.io/unbound-force/opencode-base:latest
+# Rebuilt: weekly via scheduled CI + manual dispatch
+#
+# The primary Containerfile uses this as its FROM to skip the slow
+# dnf + Go download steps on every build.
+#
+# Build:
+#   podman build -t opencode-base -f Containerfile.base .
+#
+# Smoke test:
+#   podman run --rm --entrypoint whoami opencode-base   # prints "dev"
+#   podman run --rm --entrypoint go opencode-base version
+
+FROM registry.fedoraproject.org/fedora:41
+
+# ---------------------------------------------------------------------------
+# System packages (as root)
+# ---------------------------------------------------------------------------
+
+RUN dnf install -y \
+      nodejs \
+      npm \
+      git \
+      gh \
+      curl \
+      findutils \
+      procps-ng \
+      which \
+      tar \
+      gzip \
+    && dnf clean all \
+    && rm -rf /var/cache/dnf
+
+# ---------------------------------------------------------------------------
+# Go from official tarball (Fedora 41 ships 1.24; dewey needs 1.25+)
+# ---------------------------------------------------------------------------
+
+ARG GO_VERSION=1.25.3
+RUN ARCH="$(uname -m)" \
+    && case "$ARCH" in \
+         x86_64)  GOARCH=amd64 ;; \
+         aarch64) GOARCH=arm64 ;; \
+         *)       echo "Unsupported arch: $ARCH" && exit 1 ;; \
+       esac \
+    && curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-${GOARCH}.tar.gz" \
+       | tar -C /usr/local -xz \
+    && ln -s /usr/local/go/bin/go /usr/local/bin/go \
+    && ln -s /usr/local/go/bin/gofmt /usr/local/bin/gofmt
+
+# ---------------------------------------------------------------------------
+# Non-root user
+# ---------------------------------------------------------------------------
+
+RUN useradd -m -s /bin/bash dev
+
+# ---------------------------------------------------------------------------
+# Environment — inherited by all downstream images
+# ---------------------------------------------------------------------------
+
+ENV GOROOT=/usr/local/go \
+    GOPATH=/home/dev/go \
+    NPM_CONFIG_PREFIX=/home/dev/.npm-global \
+    PATH="/usr/local/go/bin:/home/dev/go/bin:/home/dev/.npm-global/bin:/home/dev/.opencode/bin:/home/dev/.local/bin:$PATH" \
+    DEWEY_EMBEDDING_ENDPOINT=http://host.containers.internal:11434
+
+USER dev
+WORKDIR /home/dev

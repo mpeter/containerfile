@@ -160,12 +160,32 @@ CI workflow builds both architectures and pushes to quay.io.
 
 ### Functional Requirements
 
+**Base Image (Containerfile.base)**:
+
+- **FR-022**: A multi-arch base image MUST be published to
+  `quay.io/unbound-force/opencode-base` containing Fedora 41,
+  system packages (Node.js 20+, npm, Git, gh CLI, curl), and
+  Go 1.25+ installed from the official tarball.
+- **FR-023**: The base image MUST NOT include UF-specific Go
+  tools (uf, dewey, replicator, gaze). These are installed in
+  the dev image layer to allow tool updates without rebuilding
+  the base.
+- **FR-024**: The base image MUST be rebuilt weekly via a
+  scheduled CI workflow to pick up Fedora security patches and
+  Go minor version updates.
+- **FR-025**: The base image MUST create the non-root `dev`
+  user and configure GOPATH, PATH, and NPM_CONFIG_PREFIX
+  environment variables.
+
 **Container Image (Containerfile)**:
 
 - **FR-001**: The Containerfile MUST produce a multi-arch
   image that builds for both `linux/arm64` and `linux/amd64`.
+- **FR-001a**: The Containerfile MUST use
+  `quay.io/unbound-force/opencode-base:latest` as its base
+  image (not raw Fedora).
 - **FR-002**: The image MUST include these tools: `uf`,
-  OpenCode, Dewey, Replicator, Gaze, Go 1.24+, Node.js 20+,
+  OpenCode, Dewey, Replicator, Gaze, Go 1.25+, Node.js 20+,
   npm, Git, gh CLI, golangci-lint, govulncheck, OpenSpec CLI.
 - **FR-003**: Go tools MUST be installed via `go install`.
   No Homebrew or Linuxbrew in the container.
@@ -223,6 +243,13 @@ CI workflow builds both architectures and pushes to quay.io.
   for both architectures and push to
   `quay.io/unbound-force/opencode-dev` on push to main and
   on version tags.
+- **FR-026**: The CI workflow MUST use native runners for each
+  architecture (`ubuntu-latest` for amd64,
+  `ubuntu-24.04-arm` for arm64) instead of QEMU emulation.
+- **FR-027**: A separate CI workflow MUST build and push the
+  base image (`opencode-base`) on a weekly schedule and on
+  manual dispatch. This workflow MUST also use native runners
+  for each architecture.
 
 **Documentation**:
 
@@ -240,9 +267,14 @@ CI workflow builds both architectures and pushes to quay.io.
 
 ### Key Entities
 
+- **Base Image**: A multi-arch foundation image
+  (`quay.io/unbound-force/opencode-base`) containing Fedora 41,
+  system packages, and Go 1.25+. Rebuilt weekly. Used as the
+  FROM for the primary Containerfile only (not UDI variant).
 - **Container Image**: The primary OCI artifact published to
-  quay.io. Two variants: Fedora-based (primary) and UDI-based
-  (CDE). Contains the full UF toolchain.
+  quay.io. Two variants: Fedora-based (primary, built on
+  opencode-base) and UDI-based (CDE). Contains the full UF
+  toolchain.
 - **Devfile**: Eclipse Che workspace definition (Devfile 2.2.0
   schema). Two variants: custom image (fast start) and dynamic
   (UDI + postStart, no custom image).
@@ -254,8 +286,10 @@ CI workflow builds both architectures and pushes to quay.io.
 
 ### Measurable Outcomes
 
-- **SC-001**: Image builds successfully on both arm64 and
-  amd64 within 15 minutes per architecture.
+- **SC-001**: The dev image builds successfully on both arm64
+  and amd64 with a total CI wall time of 10 minutes or less
+  (both architectures combined, using native runners and the
+  pre-built base image).
 - **SC-002**: All 5 tool version checks pass (`uf`, `opencode`,
   `dewey`, `replicator`, `gaze`) after building the image.
 - **SC-003**: Container starts and OpenCode serves within
@@ -283,6 +317,16 @@ CI workflow builds both architectures and pushes to quay.io.
   environment (GitHub Actions secrets).
 - All UF tool repos (dewey, gaze, replicator, unbound-force)
   have tagged releases available for `go install @latest`.
+
+## Clarifications
+
+### Session 2026-04-12
+
+- Q: Where should the base image be published? → A: Same quay.io namespace (`quay.io/unbound-force/opencode-base`)
+- Q: How should the base image be rebuilt? → A: Weekly scheduled CI workflow
+- Q: What should the total CI build time target be? → A: 10 minutes total (both architectures combined)
+- Q: What should the base image contain? → A: System packages + Go only (UF tools in dev image layer)
+- Q: Should Containerfile.udi also use the base image? → A: No, keep UDI base for Eclipse Che compatibility
 
 ## Dependencies
 
