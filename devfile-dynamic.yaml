@@ -52,16 +52,25 @@ commands:
     exec:
       component: dev-container
       commandLine: |
-        # Install UF tools via go install + npm
-        if [ -f /projects/scripts/install-uf-tools.sh ]; then
-          bash /projects/scripts/install-uf-tools.sh
-        else
-          echo "install-uf-tools.sh not found in /projects/scripts/"
-          echo "Clone the containerfile repo or provide the script."
-          exit 1
-        fi
+        # Downloads install script from containerfile repo — works with any cloned project.
+        # Uses main branch (not SHA-pinned) so workspaces always get the latest tools.
+        # Retry up to 3 times for transient CDN failures (rate limiting, 503s).
+        for attempt in 1 2 3; do
+          if curl -fsSL --max-time 60 https://raw.githubusercontent.com/unbound-force/containerfile/main/scripts/install-uf-tools.sh | bash; then
+            break
+          fi
+          if [ "$attempt" -eq 3 ]; then
+            echo "WARNING: UF tools installation failed after 3 attempts." >&2
+            echo "Check network access to raw.githubusercontent.com" >&2
+            break
+          fi
+          echo "Install attempt $attempt failed, retrying in 5s ..."
+          sleep 5
+        done
         # Install OpenCode via official installer
-        curl -fsSL https://opencode.ai/install | bash
+        if ! curl -fsSL --max-time 60 https://opencode.ai/install | bash; then
+          echo "WARNING: OpenCode installation failed. Check network access to opencode.ai" >&2
+        fi
       workingDir: /projects
 
   - id: start-server

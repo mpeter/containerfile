@@ -131,6 +131,43 @@ Ollama is never installed inside the container (Constitution I). When
 the endpoint is empty or unreachable, the container starts normally and
 Dewey falls back to keyword search.
 
+### Factory URLs
+
+Eclipse Che supports one-click workspace creation via factory URLs.
+Navigate to the URL and Che creates a workspace automatically.
+
+By default, Che uses `devfile.yaml` at the repository root:
+
+```
+https://<che-host>/#https://github.com/unbound-force/containerfile
+```
+
+To use the dynamic devfile (UDI + postStart), append the devfile path:
+
+```
+https://<che-host>/#https://github.com/unbound-force/containerfile?devfilePath=devfile-dynamic.yaml
+```
+
+Replace `<che-host>` with your Eclipse Che instance hostname
+(e.g., `che.example.com`).
+
+### Red Hat Dev Spaces
+
+Expected to be compatible with Red Hat OpenShift Dev Spaces. Not yet
+tested in a Dev Spaces environment.
+
+Known differences from open-source Eclipse Che:
+
+- **Per-user namespaces** — Dev Spaces creates a Kubernetes namespace
+  per user automatically
+- **OpenShift OAuth** — SSO via OpenShift identity provider instead of
+  standalone Keycloak
+- **Image registry** — container images must come from a trusted
+  registry (quay.io is fine)
+
+For more information, see the
+[Red Hat Dev Spaces documentation](https://developers.redhat.com/products/openshift-dev-spaces/overview).
+
 ## Security Model
 
 These constraints are non-negotiable:
