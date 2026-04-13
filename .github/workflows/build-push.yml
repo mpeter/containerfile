@@ -43,7 +43,7 @@ jobs:
           podman run --rm opencode-dev-amd64 gaze --version
           podman run --rm opencode-dev-amd64 go version
           podman run --rm opencode-dev-amd64 golangci-lint --version
-          podman run --rm opencode-dev-amd64 govulncheck -version
+          podman run --rm --entrypoint which opencode-dev-amd64 govulncheck
           podman run --rm opencode-dev-amd64 node --version
           podman run --rm opencode-dev-amd64 npm --version
           podman run --rm opencode-dev-amd64 git --version
@@ -85,7 +85,7 @@ jobs:
           podman run --rm opencode-dev-arm64 gaze --version
           podman run --rm opencode-dev-arm64 go version
           podman run --rm opencode-dev-arm64 golangci-lint --version
-          podman run --rm opencode-dev-arm64 govulncheck -version
+          podman run --rm --entrypoint which opencode-dev-arm64 govulncheck
           podman run --rm opencode-dev-arm64 node --version
           podman run --rm opencode-dev-arm64 npm --version
           podman run --rm opencode-dev-arm64 git --version
