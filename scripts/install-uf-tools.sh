@@ -111,7 +111,10 @@ dewey version             || { error "dewey verification failed"; exit 1; }
 replicator --version      || { error "replicator verification failed"; exit 1; }
 gaze --version            || { error "gaze verification failed"; exit 1; }
 golangci-lint --version   || { error "golangci-lint verification failed"; exit 1; }
-govulncheck -version      || { error "govulncheck verification failed"; exit 1; }
+# govulncheck v1.2+ exits non-zero with -version when no Go module is present.
+# Use 'which' to verify installation instead.
+which govulncheck > /dev/null 2>&1 || { error "govulncheck verification failed"; exit 1; }
+echo "govulncheck: $(govulncheck -version 2>&1 | grep Scanner || echo 'installed')"
 openspec --version 2>/dev/null || openspec --help > /dev/null 2>&1 || { error "openspec verification failed"; exit 1; }
 
 echo ""
