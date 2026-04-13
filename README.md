@@ -96,6 +96,41 @@ which uses the Universal Developer Image and installs tools via
 **Security properties**: Workspace-level isolation managed by Eclipse
 Che. Resource limits set in devfile. No secrets in image.
 
+### CDE Endpoints
+
+Both devfiles expose public endpoints for agent-built applications so
+engineers can demo web apps and APIs directly from the Che workspace:
+
+| Endpoint | Port | Exposure | Use Case |
+|----------|------|----------|----------|
+| `opencode-server` | 4096 | internal | OpenCode server (accessed via `opencode attach`) |
+| `demo-http` | 3000 | public | Agent-built web apps (Next.js, Vite, etc.) |
+| `demo-api` | 8080 | public | Agent-built API servers (Go, Spring, etc.) |
+| `demo-alt` | 8443 | public | Alternate services or HTTPS endpoints |
+
+Che manages ingress and authentication for public endpoints — each gets
+a unique URL accessible from outside the workspace. If the agent builds
+on a port not listed here, add a temporary endpoint via the Che UI.
+
+### Ollama in CDE
+
+The `DEWEY_EMBEDDING_ENDPOINT` environment variable controls Dewey's
+connection to Ollama for semantic embeddings. The default is empty in
+the devfiles, which means Dewey uses keyword-only search (fully
+functional, no embeddings).
+
+Configure per environment:
+
+| Environment | Value | How to Set |
+|-------------|-------|------------|
+| **Local Podman** | `http://host.containers.internal:11434` | Set in `podman-compose.yml` or `-e` flag (already configured) |
+| **CDE / Kubernetes** | Ollama service URL (e.g., `http://ollama.my-namespace:11434`) | Che user preferences or K8s ConfigMap/Secret |
+| **No Ollama** | `""` (empty) | Default in devfiles — keyword search works, semantic search disabled |
+
+Ollama is never installed inside the container (Constitution I). When
+the endpoint is empty or unreachable, the container starts normally and
+Dewey falls back to keyword search.
+
 ## Security Model
 
 These constraints are non-negotiable:

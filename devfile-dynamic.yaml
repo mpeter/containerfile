@@ -21,8 +21,11 @@ components:
       cpuLimit: "4"
       mountSources: true
       env:
+        # Ollama endpoint for Dewey semantic search. Empty = keyword-only.
+        # Local Podman: http://host.containers.internal:11434
+        # CDE on K8s: set via Che user preferences or K8s secret
         - name: DEWEY_EMBEDDING_ENDPOINT
-          value: "http://host.containers.internal:11434"
+          value: ""
         - name: GOPATH
           value: "/home/user/go"
         - name: PATH
@@ -31,6 +34,18 @@ components:
         - name: opencode-server
           targetPort: 4096
           exposure: internal
+        - name: demo-http
+          targetPort: 3000
+          exposure: public
+          protocol: https
+        - name: demo-api
+          targetPort: 8080
+          exposure: public
+          protocol: https
+        - name: demo-alt
+          targetPort: 8443
+          exposure: public
+          protocol: https
 
 commands:
   - id: install-tools
@@ -61,6 +76,17 @@ commands:
       commandLine: "uf init"
       workingDir: /projects
 
+  # Composite command enforces sequential execution order.
+  # postStart events are NOT guaranteed sequential per the
+  # devfile spec — a composite with parallel: false is required.
+  - id: post-start-sequence
+    composite:
+      commands:
+        - install-tools
+        - init-workspace
+        - start-server
+      parallel: false
+
 events:
   postStart:
-    - install-tools
+    - post-start-sequence
