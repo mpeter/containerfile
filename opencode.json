@@ -1,23 +1,17 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "dewey": {
-      "type": "local",
-      "command": [
-        "dewey",
-        "serve",
-        "--vault",
-        "."
-      ],
-      "enabled": true
+    "general-dev": {
+      "type": "remote",
+      "url": "http://127.0.0.1:8080/v0/groups/general-dev/mcp"
     },
-    "replicator": {
-      "type": "local",
-      "command": [
-        "replicator",
-        "serve"
-      ],
-      "enabled": true
+    "general-dewey": {
+      "type": "remote",
+      "url": "http://127.0.0.1:8080/v0/groups/general-dewey/mcp"
+    },
+    "general-replicator": {
+      "type": "remote",
+      "url": "http://127.0.0.1:8080/v0/groups/general-replicator/mcp"
     }
   }
 }
