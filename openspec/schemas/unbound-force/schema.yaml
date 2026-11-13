@@ -14,9 +14,9 @@ artifacts:
     instruction: >
       Create a change proposal. You MUST include a
       Constitution Alignment section assessing this
-      change against all three org constitution
+      change against all four project constitution
       principles. Read the constitution from
-      .specify/memory/constitution.md for the full
+      openspec/constitution.md for the full
       principle definitions.
     requires: []
 
@@ -40,9 +40,9 @@ artifacts:
     instruction: >
       Document the technical approach. Reference the
       constitution alignment from the proposal. Note
-      any design decisions that relate to Autonomous
-      Collaboration, Composability First, or
-      Observable Quality.
+      any design decisions that relate to Composability
+      First, Security Through Isolation, Reproducible
+      Builds, or Executable Truth.
     requires: [proposal]
 
   - id: tasks

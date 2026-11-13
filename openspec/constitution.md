@@ -19,12 +19,12 @@
     - Principle 5 (4 principles sufficient)
 
   Templates requiring updates:
-    ✅ .specify/templates/plan-template.md — no changes needed;
+    ✅ Historical plan template — no changes needed;
        Constitution Check section is generic and will align at
        plan time using these four principles.
-    ✅ .specify/templates/spec-template.md — no changes needed;
+    ✅ Historical requirements template — no changes needed;
        requirements format already uses MUST/SHOULD language.
-    ✅ .specify/templates/tasks-template.md — no changes needed;
+    ✅ Historical tasks template — no changes needed;
        task phases are feature-driven, not principle-specific.
 
   Deferred TODOs: none
@@ -153,12 +153,12 @@ its place.
 ## Development Workflow
 
 - **Spec-First Development**: All non-trivial changes
-  MUST be preceded by a spec workflow (Speckit for 3+
-  stories, OpenSpec for smaller changes). Exempt:
+  MUST be preceded by an OpenSpec change under
+  `openspec/changes/<name>/`. Exempt:
   constitution amendments, typo fixes, single-line
   config changes.
 - **Branching**: All work MUST occur on feature branches.
-  Speckit: `NNN-<name>`. OpenSpec: `opsx/<name>`.
+  OpenSpec: `opsx/<name>`.
 - **Code Review**: Every pull request MUST receive at
   least one approving review before merge.
 - **Continuous Integration**: The CI pipeline MUST pass

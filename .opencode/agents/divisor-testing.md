@@ -36,8 +36,8 @@ informational note and proceed with the standard review.
 Before reviewing, read:
 
 1. `AGENTS.md` -- Testing conventions, coding conventions, build & test commands
-2. `.specify/memory/constitution.md` -- Core principles (especially Observable Quality and Testability)
-3. The relevant spec, plan, and tasks files under `specs/` for the current work
+2. `openspec/constitution.md` -- Project principles
+3. The active change's proposal, design, delta specs, and tasks under `openspec/changes/<name>/`, plus referenced canonical specs under `openspec/specs/`
 4. `.opencode/uf/packs/severity.md` -- Shared severity definitions (MUST load for consistent severity classification per Spec 019 FR-006)
 5. All `*.md` files from `.opencode/uf/packs/` -- active convention pack. If no pack files are found, note this in your findings and proceed with universal checks only.
 6. **Knowledge graph** (optional) — If Dewey MCP tools are available, use `dewey_semantic_search` to find test quality patterns, coverage baselines, and recurring test findings across repos. Use `dewey_search` and `dewey_traverse` for structured queries. If only graph tools are available (no embedding model), use `dewey_search` and `dewey_traverse` only. If Dewey is unavailable, rely on reading files directly and using Grep for keyword search.
@@ -115,7 +115,7 @@ Use this mode when the caller instructs you to review spec artifacts instead of 
 
 ### Review Scope
 
-Read **all files** under `specs/` recursively (every feature directory and every artifact: `spec.md`, `plan.md`, `tasks.md`, `data-model.md`, `research.md`, `quickstart.md`, and `checklists/`). Also read `.specify/memory/constitution.md` and `AGENTS.md` for constraint context.
+Read the active change under `openspec/changes/<name>/` recursively (proposal, design, delta specs, and tasks), plus referenced canonical specs under `openspec/specs/`. If no change is active, review canonical specs and non-archived changes. Also read `openspec/constitution.md` and `AGENTS.md` for constraint context.
 
 Do NOT use `git diff` or review code files. Your scope is exclusively the specification artifacts.
 
@@ -171,7 +171,7 @@ For each finding, provide:
 ```
 ### [SEVERITY] Finding Title
 
-**File**: `path/to/file:line` (or `specs/NNN-feature/artifact.md` in spec review mode)
+**File**: `path/to/file:line` (or `openspec/changes/<name>/specs/<capability>/spec.md` in spec review mode)
 **Constraint**: Which test quality dimension is violated
 **Description**: What the issue is and why it matters
 **Recommendation**: How to fix it

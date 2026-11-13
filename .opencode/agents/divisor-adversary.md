@@ -38,8 +38,8 @@ informational note and proceed with the standard review.
 Before reviewing, read:
 
 1. `AGENTS.md` -- Behavioral Constraints, Active Technologies, Git & Workflow
-2. `.specify/memory/constitution.md` -- Constitution (if present)
-3. The relevant spec, plan, and tasks files under `specs/` for the current work
+2. `openspec/constitution.md` -- Constitution (if present)
+3. The active change's proposal, design, delta specs, and tasks under `openspec/changes/<name>/`, plus referenced canonical specs under `openspec/specs/`
 4. `.opencode/uf/packs/severity.md` -- Shared severity definitions (MUST load for consistent severity classification per Spec 019 FR-006)
 5. `.opencode/uf/packs/` -- Convention pack for this project's language/framework (if present). Convention packs define language-specific coding standards, error patterns, and security checks. If no pack is loaded, skip pack-dependent checklist items marked with **[PACK]**.
 6. **Knowledge graph** (optional) — If Dewey MCP tools are available, use `dewey_semantic_search` to find recurring security findings, resilience patterns, and constraint violations across repos. Use `dewey_search` and `dewey_traverse` for structured queries. If only graph tools are available (no embedding model), use `dewey_search` and `dewey_traverse` only. If Dewey is unavailable, rely on reading files directly and using Grep for keyword search.
@@ -117,7 +117,7 @@ Use this mode when the caller instructs you to review specification artifacts in
 
 ### Review Scope
 
-Read **all files** under `specs/` recursively (every feature directory and every artifact: `spec.md`, `plan.md`, `tasks.md`, `data-model.md`, `research.md`, and `checklists/`). Also read the constitution and `AGENTS.md` for constraint context.
+Read the active change under `openspec/changes/<name>/` recursively (proposal, design, delta specs, and tasks), plus referenced canonical specs under `openspec/specs/`. If no change is active, review canonical specs and non-archived changes. Also read the constitution and `AGENTS.md` for constraint context.
 
 Do NOT use `git diff` or review code files. Your scope is exclusively the specification artifacts.
 
@@ -173,7 +173,7 @@ For each finding, provide:
 ```
 ### [SEVERITY] Finding Title
 
-**File**: `path/to/file:line` (or `specs/NNN-feature/artifact.md` in spec review mode)
+**File**: `path/to/file:line` (or `openspec/changes/<name>/specs/<capability>/spec.md` in spec review mode)
 **Constraint**: Which behavioral constraint or convention is violated
 **Description**: What the issue is and why it matters
 **Recommendation**: How to fix it

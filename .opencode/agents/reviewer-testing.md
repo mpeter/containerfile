@@ -25,8 +25,8 @@ Your job is to find where tests are shallow, brittle, or missing; where coverage
 Before reviewing, read:
 
 1. `AGENTS.md` — Testing Conventions, Coding Conventions, Build & Test Commands
-2. `.specify/memory/constitution.md` — Core Principles (especially Principle IV: Testability)
-3. The relevant spec, plan, and tasks files under `specs/` for the current work
+2. `openspec/constitution.md` — Project principles
+3. The active change's proposal, design, delta specs, and tasks under `openspec/changes/<name>/`, plus referenced canonical specs under `openspec/specs/`
 
 ---
 
@@ -88,11 +88,11 @@ Evaluate all recent changes (staged, unstaged, and untracked files). Use `git di
 
 ## Spec Review Mode
 
-Use this mode when the caller instructs you to review SpecKit artifacts instead of code.
+Use this mode when the caller instructs you to review OpenSpec artifacts instead of code.
 
 ### Review Scope
 
-Read **all files** under `specs/` recursively (every feature directory and every artifact: `spec.md`, `plan.md`, `tasks.md`, `data-model.md`, `research.md`, `quickstart.md`, and `checklists/`). Also read `.specify/memory/constitution.md` and `AGENTS.md` for constraint context.
+Read the active change under `openspec/changes/<name>/` recursively (proposal, design, delta specs, and tasks), plus referenced canonical specs under `openspec/specs/`. If no change is active, review canonical specs and non-archived changes. Also read `openspec/constitution.md` and `AGENTS.md` for constraint context.
 
 Do NOT use `git diff` or review code files. Your scope is exclusively the specification artifacts.
 
@@ -149,7 +149,7 @@ For each finding, provide:
 ```
 ### [SEVERITY] Finding Title
 
-**File**: `path/to/file:line` (or `specs/NNN-feature/artifact.md` in spec review mode)
+**File**: `path/to/file:line` (or `openspec/changes/<name>/specs/<capability>/spec.md` in spec review mode)
 **Constraint**: Which test quality dimension is violated
 **Description**: What the issue is and why it matters
 **Recommendation**: How to fix it

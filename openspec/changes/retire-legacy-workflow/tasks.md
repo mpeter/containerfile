@@ -4,11 +4,11 @@
 
 ## 2. Retire the competing workflow
 
-- [ ] 2.1 Move the constitution and update repository guidance and schema references.
-- [ ] 2.2 Remove retired scripts, templates, commands, and skill; adapt retained prompts.
+- [x] 2.1 Move the constitution and update repository guidance and schema references.
+- [x] 2.2 Remove retired scripts, templates, commands, and skill; adapt retained prompts.
 
 ## 3. Verify
 
-- [ ] 3.1 Verify constitution alignment, historical task preservation, and unchanged runtime files.
-- [ ] 3.2 Validate all OpenSpec changes and canonical specs; check tracked contents and filenames.
+- [x] 3.1 Verify constitution alignment, historical task preservation, and unchanged runtime files.
+- [x] 3.2 Validate all OpenSpec changes and canonical specs; check tracked contents and filenames.
 - [ ] 3.3 Run repository build and smoke gates at the final committed HEAD; report failures without claiming completion.
