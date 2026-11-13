@@ -99,7 +99,7 @@ specs/001-initial-containerfile/
 │   └── connect.md
 ├── checklists/
 │   └── requirements.md  # Spec quality checklist (already exists)
-└── tasks.md             # Phase 2 output (/speckit.tasks — NOT created here)
+└── tasks.md             # Phase 2 output (task generation — NOT created here)
 ```
 
 ### Source Code (repository root)
