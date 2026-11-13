@@ -20,7 +20,10 @@ repository command and agent prompts are not embedded or deployed by the image.
   Only the workflow and paths change, as authorized by the owner.
 - Update existing local prompts in place, preserving tool restrictions and review
   limits. Remove instructions that regenerate the retired workflow.
-- Leave the two existing OpenSpec changes and their task states untouched.
+- Preserve the two existing OpenSpec changes' requirements and task states.
+- Repair their delta file layout to `specs/<capability>/spec.md` so validation
+  actually reads them; add the missing README scenario restating its requirement.
+  No existing requirement or scenario is removed, and task states stay unchanged.
 - There are no shipped assets to remove, so no stale-user-file deletion path or
   product release entry is required. The local initialization prompt must not
   create or customize retired workflow assets.
