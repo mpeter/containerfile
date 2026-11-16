@@ -123,7 +123,7 @@ following categories are protected:
    frontmatter `temperature`, `tools.write`, `tools.edit`,
    `tools.bash` restrictions
 6. **Constitution MUST rules** — any MUST rule in
-   `.specify/memory/constitution.md` or hero constitutions
+   `openspec/constitution.md` or hero constitutions
 7. **Review iteration limits and worker concurrency** —
    max review iterations, max concurrent Swarm workers,
    retry limits
@@ -142,10 +142,10 @@ constitution violation (CRITICAL severity).
 
 Agents MUST NOT cross workflow phase boundaries:
 
-- **Specify/Clarify/Plan/Tasks/Analyze/Checklist** phases:
-  spec artifacts ONLY (`specs/NNN-*/` directory). No
+- **Propose/Explore** phases:
+  spec artifacts ONLY (`openspec/changes/<name>/` directory). No
   source code, test, agent, command, or config changes.
-- **Implement** phase: source code changes allowed,
+- **Apply** phase: source code changes allowed,
   guided by spec artifacts.
 - **Review** phase: findings and minor fixes only. No new
   features.
@@ -198,16 +198,18 @@ Exempt from council review:
 All changes that modify production code, test code, agent
 prompts, embedded assets, or CI configuration **must** be
 preceded by a spec workflow. The constitution
-(`.specify/memory/constitution.md`) is the highest-
+(`openspec/constitution.md`) is the highest-
 authority document in this project — all work must align
 with it.
 
-Two spec workflows are available:
+OpenSpec is the only requirements pipeline. Prepare proposal,
+design, delta specs, and tasks under `openspec/changes/<name>/`
+before implementation. Canonical requirements live under
+`openspec/specs/`; finished changes and historical strategic
+artifacts live under `openspec/changes/archive/`.
 
-| Workflow | Location | Best For |
-|----------|----------|----------|
-| **Speckit** | `specs/NNN-name/` | Numbered feature specs with the full pipeline |
-| **OpenSpec** | `openspec/changes/name/` | Targeted changes with lightweight artifacts |
+Use `/opsx-propose` to prepare a change, `/opsx-apply` to
+implement it, and `/opsx-archive` after verification.
 
 **What requires a spec** (no exceptions without explicit
 user override):
@@ -268,16 +270,12 @@ gh issue create --repo unbound-force/website \
 
 ## Specification Framework
 
-This project uses a two-tier specification framework:
-
-| Tier | Tool | When to Use | Location |
-|------|------|-------------|----------|
-| Strategic | Speckit | 3+ stories, architecture | `specs/NNN-*/` |
-| Tactical | OpenSpec | <3 stories, bug fix | `openspec/changes/` |
+This project uses OpenSpec for both strategic and tactical changes.
+Archived strategic artifacts are historical evidence, not a second
+active requirements authority.
 
 ### Branch Conventions
 
-- **Speckit**: `NNN-<short-name>` (e.g., `001-initial-containerfile`)
 - **OpenSpec**: `opsx/<change-name>` (e.g., `opsx/fix-entrypoint`)
 
 ### Ordering Constraints

@@ -31,7 +31,7 @@
 
 ## Notes
 
-- All items pass. Spec is ready for `/speckit.clarify` or `/speckit.plan`.
+- All items pass. Strategic spec is ready for clarification or planning.
 - 4 user stories covering: local build (P1), headless mode (P2), CDE (P3), CI (P4).
 - 21 functional requirements, 7 success criteria, 5 edge cases.
 - No clarifications needed — Issue #1 and Discussion #88 provided complete requirements.

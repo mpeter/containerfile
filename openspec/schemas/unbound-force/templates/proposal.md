@@ -23,37 +23,35 @@
 
 ## Constitution Alignment
 
-Assessed against the Unbound Force org constitution.
+Assessed against `openspec/constitution.md`, extending the org constitution.
 
-### I. Autonomous Collaboration
-
-**Assessment**: PASS | N/A
-
-<!-- How does this change affect artifact-based
-communication? Does it maintain self-describing
-outputs? -->
-
-### II. Composability First
+### I. Composability First
 
 **Assessment**: PASS | N/A
 
-<!-- Does this change maintain standalone
-functionality? Does it avoid introducing mandatory
-dependencies? -->
+<!-- Does the container remain independently usable
+with Podman and a mounted project? -->
 
-### III. Observable Quality
-
-**Assessment**: PASS | N/A
-
-<!-- Does this change produce machine-parseable
-output? Does it maintain provenance metadata? -->
-
-### IV. Testability
+### II. Security Through Isolation
 
 **Assessment**: PASS | N/A
 
-<!-- Does this change verify observable side effects?
-Are components testable in isolation? -->
+<!-- Are non-root execution, rootless isolation,
+credential boundaries, and resource limits preserved? -->
+
+### III. Reproducible Builds
+
+**Assessment**: PASS | N/A
+
+<!-- Are multi-architecture builds, deterministic tool
+installation, and smoke checks preserved? -->
+
+### IV. Executable Truth
+
+**Assessment**: PASS | N/A
+
+<!-- Does documentation match the Containerfiles, with
+local build and smoke verification for runtime changes? -->
 <!-- scaffolded by uf vv0.6.1 -->
 <!-- scaffolded by uf vdev -->
 <!-- scaffolded by uf vdev -->

@@ -1,22 +1,23 @@
 schema: unbound-force
 
 context: |
-  This project follows the Unbound Force org constitution.
+  This project follows its containerfile constitution,
+  extending the Unbound Force org constitution.
   Four core principles govern all work:
 
-  I. Autonomous Collaboration: Heroes collaborate through
-     well-defined artifacts, not runtime coupling.
-  II. Composability First: Every hero is independently
-      installable and usable alone.
-  III. Observable Quality: Every hero produces
-       machine-parseable output with provenance.
-  IV. Testability: Every component MUST be testable in
-       isolation without requiring external services.
+  I. Composability First: The container is independently
+     usable with Podman and a mounted project.
+  II. Security Through Isolation: Rootless, non-root
+      containers contain agent activity.
+  III. Reproducible Builds: Multi-architecture images
+       and tool installations are verifiable.
+  IV. Executable Truth: Container definitions are the
+      source of truth for image contents.
 
   All changes MUST align with these principles.
   Constitution violations are CRITICAL severity.
 
-  Full constitution: .specify/memory/constitution.md
+  Full constitution: openspec/constitution.md
 
 rules:
   proposal:

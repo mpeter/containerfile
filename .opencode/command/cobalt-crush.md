@@ -2,8 +2,7 @@
 description: >
   Invoke the Cobalt-Crush developer persona for implementation tasks.
   With arguments: delegates to the cobalt-crush-dev agent. Without
-  arguments: detects active workflow and runs /speckit.implement or
-  /opsx:apply.
+  arguments: detects the active OpenSpec change and runs /opsx-apply.
 ---
 <!-- scaffolded by uf vdev -->
 <!-- scaffolded by uf vdev -->
@@ -28,7 +27,7 @@ $ARGUMENTS
 
 ```
 /cobalt-crush [task description or instructions]
-/cobalt-crush                    # auto-detect workflow and implement
+/cobalt-crush                    # detect OpenSpec change and implement
 ```
 
 ### Examples
@@ -37,7 +36,7 @@ $ARGUMENTS
 /cobalt-crush implement T015 from tasks.md
 /cobalt-crush fix the failing test in internal/metrics/store_test.go
 /cobalt-crush refactor runMetrics to reduce complexity
-/cobalt-crush                    # detects speckit or openspec context
+/cobalt-crush                    # detects OpenSpec context
 ```
 
 ## Instructions
@@ -48,7 +47,7 @@ Delegate to the `cobalt-crush-dev` agent using the Task tool with
 `subagent_type: "cobalt-crush-dev"`. Pass the user's arguments as
 the task prompt. The agent will:
 
-1. Read AGENTS.md, constitution, convention packs, and active specs
+1. Read AGENTS.md, openspec/constitution.md, convention packs, and the active change's proposal, design, specs, and tasks
 2. Apply its engineering philosophy (clean code, SOLID, TDD awareness)
 3. Load convention packs from `.opencode/uf/packs/`
 4. Check `.uf/artifacts/` for Gaze/Divisor feedback
@@ -57,21 +56,14 @@ the task prompt. The agent will:
 
 ### When no arguments are provided
 
-Detect the active workflow and delegate the corresponding
+Detect the active OpenSpec change and delegate the
 implementation command to the `cobalt-crush-dev` agent:
 
-1. **Check for a Speckit feature branch**: Run
-   `.specify/scripts/bash/check-prerequisites.sh --json --paths-only`
-   from the repo root. If it succeeds and returns a `FEATURE_DIR`
-   with a `tasks.md`, this is a Speckit strategic workflow.
-   Read the full contents of `.opencode/command/speckit.implement.md`
-   and delegate it to the `cobalt-crush-dev` agent via the Task
-   tool — pass the command file's instructions as the agent's
-   prompt so the agent executes the implementation workflow.
-
-2. **Check for an OpenSpec active change**: Look for directories
+1. **Check for an OpenSpec active change**: Look for directories
    under `openspec/changes/` that contain a `tasks.md` file. If
-   one exists, this is an OpenSpec tactical workflow.
+   one exists, this is an OpenSpec change. Exclude `archive/`.
+   If multiple changes exist, select the one matching the current
+   `opsx/<change-name>` branch; otherwise ask which change to use.
    **Validate branch**: Run `git rev-parse --abbrev-ref HEAD`.
    The current branch must be `opsx/<change-name>` where
    `<change-name>` matches the detected change directory name.
@@ -85,15 +77,17 @@ implementation command to the `cobalt-crush-dev` agent:
    file's instructions as the agent's prompt so the agent
    executes the apply workflow.
 
-3. **If neither is detected**: Ask the user which workflow to run:
+2. **If no active change is detected**: Explain how to prepare one:
 
-   > No active implementation context detected. Which workflow
-   > should I execute?
+   > No active implementation context detected. Run
+   > `/opsx-propose` to prepare a change in `openspec/changes/`.
+   > Then choose:
    >
-   > - `/speckit.implement` — Strategic spec implementation
-   >   (requires a feature branch with `specs/NNN-*/tasks.md`)
-   > - `/opsx:apply` — Tactical change implementation
+   > - `/unleash` — Autonomous pipeline (parallel swarm)
+   > - `/opsx-apply` — OpenSpec change implementation
    >   (requires an active change in `openspec/changes/`)
+   >
+   > When implementation is complete, run `/opsx-archive`.
 
 ## Branch Safety Guardrails
 

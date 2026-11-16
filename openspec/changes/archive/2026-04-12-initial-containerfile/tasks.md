@@ -188,3 +188,13 @@
 | **Files created** | 14 |
 | **Files modified** | 3 (AGENTS.md, Containerfile, build-push.yml) |
 <!-- spec-review: passed -->
+
+## Archive Evidence (2026-11-13)
+
+Archived after [implementation PR #2](https://github.com/unbound-force/containerfile/pull/2)
+merged on 2026-04-12 as `66630fbaad5cfcbfb9ae28025cd5d208d4183b0c`.
+The PR records the deliverables, build and smoke checks, and reviewer approvals.
+All 23 tasks were already checked in the source; their states are preserved
+without promoting any task. Historical verification assertions above are not
+a claim that this migration reran those checks. Original numbered paths and
+branch identifiers remain historical context, not active workflow instructions.

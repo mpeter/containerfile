@@ -80,6 +80,12 @@ use) and Ollama configuration guidance for CDE environments.
 
 Previously: README documented only local Podman Ollama setup.
 
+#### Scenario: Engineer reads CDE configuration guidance
+- **GIVEN** an engineer configuring a CDE workspace
+- **WHEN** they read README.md
+- **THEN** they find demo endpoint ports, names, intended uses, and
+  Ollama configuration guidance for CDE environments
+
 ## REMOVED Requirements
 
 None.
